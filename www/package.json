@@ -1,0 +1,13 @@
+{
+  "name": "nfl-power-rankings",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && dotnet run --project ../api/PowerIndex.Api.csproj --urls http://localhost:5080",
+    "test": "npm run build && node --test"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

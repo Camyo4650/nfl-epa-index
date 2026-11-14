@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f5f2">
+    <meta name="description" content="A clean, week-by-week view of NFL power rankings.">
+    <title>Power Index | NFL Rankings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./dist/app.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="./" aria-label="Power Index home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 18V10M10 18V6M15 18V12M20 18V3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+          </span>
+          <span>POWER<span class="brand-light">INDEX</span><small>PRO FOOTBALL</small></span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="./" aria-current="page">Rankings</a>
+          <a id="movement-link" href="./movement.html">Movement</a>
+          <a href="./history.html">History</a>
+        </nav>
+        <div class="header-right">
+          <span class="header-caption">THE WEEKLY BREAKDOWN</span>
+          <span class="demo-pill"><span></span> NFLVERSE DATA</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> THE LEAGUE, RANKED</div>
+          <h1 id="page-title">The EPA<br><span>rankings.</span></h1>
+          <p>Explore offensive, defensive, special-teams and combined efficiency, and see how teams move from week to week.</p>
+        </div>
+        <div class="intro-decoration" aria-hidden="true"><span>32</span><small>TEAMS.<br>ONE LEAGUE.</small></div>
+      </section>
+
+      <div class="section-heading">
+        <div><span class="section-kicker">AT THE TOP</span><h2>The front runners<span class="heading-dot">.</span></h2></div>
+        <p>THE TEAMS TO BEAT <span aria-hidden="true">↗</span></p>
+      </div>
+      <section id="leaders" class="leaders" aria-label="Top three ranked teams"></section>
+
+      <section class="rankings-section" aria-labelledby="rankings-title">
+        <div class="rankings-heading">
+          <div><span class="section-kicker">THE COMPLETE PICTURE</span><h2 id="rankings-title">League rankings<span class="heading-dot">.</span></h2><p><span id="metric-label">EPA per play</span>. <span id="comparison-label"></span> Select a team to see its games.</p></div>
+          <div class="data-selectors">
+            <label class="week-select"><span>SEASON</span><select id="season-select" aria-label="Select season"></select><span class="select-chevron" aria-hidden="true">⌄</span></label>
+            <label class="week-select"><span>VIEWING</span><select id="week-select" aria-label="Select ranking week"></select><span class="select-chevron" aria-hidden="true">⌄</span></label>
+            <label class="week-select"><span>EPA</span><select id="metric-select" aria-label="Select EPA metric"><option value="offense">Offense</option><option value="defense">Defense allowed</option><option value="special">Special teams</option><option value="combined" selected>Combined</option></select><span class="select-chevron" aria-hidden="true">⌄</span></label>
+          </div>
+        </div>
+        <p id="data-status" class="data-status" role="status" hidden></p>
+        <p id="refresh-status" class="refresh-status" role="status"></p>
+        <div class="rankings-panel">
+          <div class="toolbar">
+            <div class="filters" role="group" aria-label="Filter by conference">
+              <button type="button" class="filter active" data-conference="ALL" aria-pressed="true">All teams</button>
+              <button type="button" class="filter" data-conference="AFC" aria-pressed="false">AFC</button>
+              <button type="button" class="filter" data-conference="NFC" aria-pressed="false">NFC</button>
+            </div>
+            <label class="search">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3" stroke="currentColor" stroke-width="1.7"/><path d="m15.5 15.5 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <span class="sr-only">Search teams</span>
+              <input id="team-search" type="search" placeholder="Search teams..." autocomplete="off">
+              <span class="search-shortcut" aria-hidden="true">/</span>
+            </label>
+            <details class="column-picker">
+              <summary>Columns</summary>
+              <fieldset>
+                <legend>Show columns</legend>
+                <label><input type="checkbox" data-column-toggle="rank"> Rank</label>
+                <label><input type="checkbox" data-column-toggle="division"> Division</label>
+                <label><input type="checkbox" data-column-toggle="record"> Record</label>
+                <label><input type="checkbox" data-column-toggle="currentGame"> This week’s game</label>
+                <label><input type="checkbox" data-column-toggle="previousGame"> Previous week’s game</label>
+                <label><input type="checkbox" data-column-toggle="pointsFor"> Points for</label>
+                <label><input type="checkbox" data-column-toggle="pointsAllowed"> Points allowed</label>
+                <label><input type="checkbox" data-column-toggle="netPoints"> Net points</label>
+                <label><input type="checkbox" data-column-toggle="epa"> EPA value</label>
+                <label><input type="checkbox" data-column-toggle="strengthOfSchedule"> Strength of schedule</label>
+                <label><input type="checkbox" data-column-toggle="previousRank"> Previous rank</label>
+                <label><input type="checkbox" data-column-toggle="change" checked> Change</label>
+              </fieldset>
+            </details>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th scope="col" data-column="rank" hidden><button type="button" class="sort-button" data-sort="rank">RANK <span aria-hidden="true">↑</span></button></th>
+                <th scope="col"><button type="button" class="sort-button" data-sort="team">TEAM <span aria-hidden="true">↕</span></button></th>
+                <th scope="col" data-column="division" hidden><button type="button" class="sort-button" data-sort="division">DIVISION <span aria-hidden="true">↕</span></button></th>
+                <th scope="col" data-column="record" hidden><button type="button" class="sort-button" data-sort="record" title="Sort by winning percentage">RECORD <span aria-hidden="true">↕</span></button></th>
+                <th scope="col" data-column="currentGame" hidden><button type="button" class="sort-button" data-sort="currentGame" title="Sort by opponent"><span class="game-heading" data-game-week="current">THIS WEEK</span> <span aria-hidden="true">↕</span></button></th>
+                <th scope="col" data-column="previousGame" hidden><button type="button" class="sort-button" data-sort="previousGame" title="Sort by opponent"><span class="game-heading" data-game-week="previous">PREVIOUS WEEK</span> <span aria-hidden="true">↕</span></button></th>
+                <th scope="col" data-column="pointsFor" hidden><button type="button" class="sort-button" data-sort="pointsFor">POINTS FOR <span aria-hidden="true">↕</span></button></th>
+                <th scope="col" data-column="pointsAllowed" hidden><button type="button" class="sort-button" data-sort="pointsAllowed">POINTS ALLOWED <span aria-hidden="true">↕</span></button></th>
+                <th scope="col" data-column="netPoints" hidden><button type="button" class="sort-button" data-sort="netPoints">NET POINTS <span aria-hidden="true">↕</span></button></th>
+                <th scope="col" data-column="epa" hidden><button type="button" class="sort-button" data-sort="epa">EPA VALUE <span aria-hidden="true">↕</span></button></th>
+                <th scope="col" data-column="strengthOfSchedule" hidden><button type="button" class="sort-button" data-sort="strengthOfSchedule" title="Strength of schedule rank; #1 is the toughest">SOS RANK <span aria-hidden="true">↕</span></button></th>
+                <th scope="col" data-column="previousRank" hidden><button type="button" class="sort-button" data-sort="previousRank">PREV. <span aria-hidden="true">↕</span></button></th>
+                <th scope="col" data-column="change"><button type="button" class="sort-button" data-sort="change">CHANGE <span aria-hidden="true">↕</span></button></th>
+              </tr></thead>
+              <tbody id="rankings-body"></tbody>
+            </table>
+            <p id="empty-state" class="empty-state" hidden>No teams found. Try a different search or conference.</p>
+          </div>
+          <div class="panel-footer"><span id="result-count" aria-live="polite"></span><span>WEEKLY EPA RANKINGS <span class="footer-star">✳</span></span></div>
+        </div>
+        <p class="data-note"><span>ⓘ</span> Season-to-date EPA through completed weeks, via nflverse. Higher is better except for defensive EPA allowed. Combined is offense minus defense allowed plus net special teams. SOS ranks teams by their opponents' average offensive EPA minus defensive EPA allowed; #1 is the toughest schedule. Teams without qualifying plays are not ranked.</p>
+      </section>
+    </main>
+    <footer class="site-footer"><div><span class="footer-brand">POWER<span>INDEX</span></span><span>MADE FOR THE LOVE OF THE GAME.</span><span>INDEPENDENT &amp; UNOFFICIAL</span></div></footer>
+  </body>
+</html>

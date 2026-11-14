@@ -1,0 +1,8 @@
+engine/.venv/
+engine/__pycache__/
+api/bin/
+api/obj/
+data/*.sqlite3*
+www/node_modules/
+www/dist/
+.DS_Store

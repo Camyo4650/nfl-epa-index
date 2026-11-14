@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f5f2">
+    <meta name="description" content="Explore NFL EPA ranking history by week.">
+    <title>Ranking History | Power Index</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./dist/history.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="./" aria-label="Power Index home">
+          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 18V10M10 18V6M15 18V12M20 18V3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+          <span>POWER<span class="brand-light">INDEX</span><small>PRO FOOTBALL</small></span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="./">Rankings</a>
+          <a href="./movement.html">Movement</a>
+          <a href="./history.html" aria-current="page">History</a>
+        </nav>
+        <div class="header-right"><span class="header-caption">THE WEEKLY BREAKDOWN</span><span class="demo-pill"><span></span> NFLVERSE DATA</span></div>
+      </div>
+    </header>
+    <main class="page-shell">
+      <section class="intro movement-intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> THE SEASON SO FAR</div>
+          <h1 id="page-title">The long<br><span>game.</span></h1>
+          <p>Follow each team's EPA ranking from week to week across the season.</p>
+        </div>
+        <div class="intro-decoration" aria-hidden="true"><span>↗</span></div>
+      </section>
+      <section class="movement-section" aria-labelledby="history-title">
+        <div class="rankings-heading">
+          <div><span class="section-kicker">WEEK BY WEEK</span><h2 id="history-title">Ranking history<span class="heading-dot">.</span></h2><p id="history-comparison" aria-live="polite"></p></div>
+          <div class="data-selectors">
+            <label class="week-select"><span>SEASON</span><select id="season-select" aria-label="Select season"></select><span class="select-chevron" aria-hidden="true">⌄</span></label>
+            <label class="week-select"><span>VIEWING</span><select id="week-select" aria-label="Select ranking week"></select><span class="select-chevron" aria-hidden="true">⌄</span></label>
+            <label class="week-select"><span>EPA</span><select id="metric-select" aria-label="Select EPA metric"><option value="combined" selected>Combined</option><option value="offense">Offense</option><option value="defense">Defense allowed</option><option value="special">Special teams</option></select><span class="select-chevron" aria-hidden="true">⌄</span></label>
+          </div>
+        </div>
+        <p id="data-status" class="data-status" role="status" hidden></p>
+        <p id="refresh-status" class="refresh-status" role="status"></p>
+        <div class="rankings-panel">
+          <div class="chart-toolbar">
+            <p>Better ranks are at the top <span aria-hidden="true">↗</span></p>
+            <div class="chart-controls" role="group" aria-label="Team selection">
+              <button type="button" id="select-all" disabled>Select all</button>
+              <button type="button" id="clear-all" disabled>Clear all</button>
+              <button type="button" id="clear-highlight" disabled>Clear highlight</button>
+            </div>
+          </div>
+          <p class="chart-hint">The rank axis adjusts to selected teams. Hover over a point to see its rank. Click a line or point to highlight its team and dim the others; click again to clear. Use the Focus buttons below to do the same with a keyboard. The chart shows all available weeks.</p>
+          <p id="highlight-status" class="history-highlight-status" role="status"></p>
+          <div class="history-scroll" role="region" aria-label="Ranking history chart; scroll horizontally to see all weeks" tabindex="0">
+            <div id="history-chart"></div>
+          </div>
+          <p id="history-empty" class="history-empty" hidden>Select at least one team to show its ranking history.</p>
+          <fieldset id="history-teams" class="history-teams" disabled><legend>Teams</legend></fieldset>
+          <details class="history-data">
+            <summary>View ranking data as a table</summary>
+            <div class="table-wrap" id="history-table"></div>
+          </details>
+          <div class="panel-footer"><span id="history-count"></span><span>WEEKLY EPA RANKINGS <span class="footer-star">✳</span></span></div>
+        </div>
+        <p class="data-note"><span>ⓘ</span> Rankings are season-to-date EPA through completed weeks. Teams without qualifying plays are not ranked.</p>
+      </section>
+    </main>
+    <div id="history-point-tooltip" class="history-point-tooltip" role="tooltip" hidden></div>
+    <footer class="site-footer"><div><span class="footer-brand">POWER<span>INDEX</span></span><span>MADE FOR THE LOVE OF THE GAME.</span><span>INDEPENDENT &amp; UNOFFICIAL</span></div></footer>
+  </body>
+</html>

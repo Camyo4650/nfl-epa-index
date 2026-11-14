@@ -1,0 +1,31 @@
+services:
+  web:
+    build: ./www
+    ports:
+      - "${PORT:-5080}:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  api:
+    build: ./api
+    environment:
+      POWERINDEX_ENGINE_URL: http://engine:8000
+    depends_on:
+      engine:
+        condition: service_healthy
+    restart: unless-stopped
+
+  engine:
+    build: ./engine
+    environment:
+      POWERINDEX_DB: /data/rankings.sqlite3
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
