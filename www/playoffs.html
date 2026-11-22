@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f5f2">
+    <meta name="description" content="Explore provisional NFL playoff standings and estimated chances.">
+    <title>Playoff Picture | Power Index</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./dist/playoffs.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="./" aria-label="Power Index home">
+          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 18V10M10 18V6M15 18V12M20 18V3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+          <span>POWER<span class="brand-light">INDEX</span><small>PRO FOOTBALL</small></span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="./">Rankings</a>
+          <a href="./movement.html">Movement</a>
+          <a href="./history.html">History</a>
+          <a href="./playoffs.html" aria-current="page">Playoffs</a>
+        </nav>
+        <div class="header-right"><span class="header-caption">THE WEEKLY BREAKDOWN</span><span class="demo-pill"><span></span> NFLVERSE DATA</span></div>
+      </div>
+    </header>
+    <main class="page-shell">
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <div class="eyebrow"><span class="eyebrow-line"></span> THE ROAD TO THE POSTSEASON</div>
+          <h1 id="page-title">The playoff<br><span>picture.</span></h1>
+          <p>Follow the conference race and see estimated playoff chances through each completed week.</p>
+        </div>
+        <div class="intro-decoration" aria-hidden="true"><span>14</span><small>TEAMS.<br>ONE GOAL.</small></div>
+      </section>
+      <section class="rankings-section playoffs-section" aria-labelledby="picture-title">
+        <div class="rankings-heading">
+          <div><span class="section-kicker">THE RACE</span><h2 id="picture-title">Conference picture<span class="heading-dot">.</span></h2><p id="picture-week"></p></div>
+          <div class="data-selectors">
+            <label class="week-select"><span>SEASON</span><select id="season-select" aria-label="Select season"></select><span class="select-chevron" aria-hidden="true">⌄</span></label>
+            <label class="week-select"><span>VIEWING</span><select id="week-select" aria-label="Select week"></select><span class="select-chevron" aria-hidden="true">⌄</span></label>
+            <label hidden><span>EPA</span><select id="metric-select" aria-label="EPA metric"><option value="combined" selected>Combined</option></select></label>
+          </div>
+        </div>
+        <p id="data-status" class="data-status" role="status" hidden></p>
+        <p id="refresh-status" class="refresh-status" role="status"></p>
+        <p class="playoff-notice">Provisional picture, not official NFL standings: ties use head-to-head, division and conference records, common games, strength of victory and strength of schedule where applicable. Remaining ties use team abbreviations; later NFL tiebreakers are not modeled. Chances are estimates from simulations using a historical combined EPA-per-play model and the remaining schedule. <span id="playoff-source"></span></p>
+        <p id="playoff-status" class="data-status" role="status" hidden></p>
+        <div class="playoff-conferences">
+          <section aria-labelledby="afc-title"><div class="playoff-conference-heading"><span class="section-kicker">AMERICAN FOOTBALL CONFERENCE</span><h2 id="afc-title">AFC<span class="heading-dot">.</span></h2></div><div id="afc-teams" class="playoff-teams"></div></section>
+          <section aria-labelledby="nfc-title"><div class="playoff-conference-heading"><span class="section-kicker">NATIONAL FOOTBALL CONFERENCE</span><h2 id="nfc-title">NFC<span class="heading-dot">.</span></h2></div><div id="nfc-teams" class="playoff-teams"></div></section>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer"><div><span class="footer-brand">POWER<span>INDEX</span></span><span>MADE FOR THE LOVE OF THE GAME.</span><span>INDEPENDENT &amp; UNOFFICIAL</span></div></footer>
+  </body>
+</html>

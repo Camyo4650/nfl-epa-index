@@ -25,7 +25,7 @@ export function formatRecord({ wins, losses, ties }: RecordData) {
   return `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
 }
 
-export function sortRankings(rankings: Ranking[], column: string, direction: string) {
+export function sortRankings<T extends Ranking>(rankings: T[], column: string, direction: string) {
   const values: Record<string, (team: Ranking) => string | number | null> = {
     rank: team => team.rank,
     team: team => team.name,
@@ -63,11 +63,18 @@ export function sortRankings(rankings: Ranking[], column: string, direction: str
   });
 }
 
-export function filterRankings(rankings: Ranking[], conference: string, search: string) {
+export function rankByColumn(rankings: Ranking[], column: string, metric: Metric) {
+  const descending = ['record', 'change', 'pointsFor', 'netPoints'].includes(column)
+    || (column === 'epa' && metric !== 'defense');
+  return sortRankings(rankings, column, descending ? 'descending' : 'ascending')
+    .map((team, index) => ({ ...team, displayRank: column === 'rank' ? team.rank : index + 1 }));
+}
+
+export function filterRankings<T extends Ranking>(rankings: T[], conference: string, search: string) {
   const query = search.trim().toLowerCase();
   return rankings.filter(team =>
     (conference === 'ALL' || team.conference === conference) &&
     `${team.name} ${team.id}`.toLowerCase().includes(query)
   );
 }
-import type { Ranking, RecordData, Team } from './types.js';
+import type { Metric, Ranking, RecordData, Team } from './types.js';

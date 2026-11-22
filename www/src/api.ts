@@ -1,7 +1,7 @@
 import { errorMessage, requiredElement } from './dom.js';
 import type { Metric, SeasonData, Selection, Status } from './types.js';
 
-async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
+export async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(url, { signal });
   if (!response.ok) {
     let message = `Request failed (${response.status}).`;
@@ -85,7 +85,8 @@ export async function setupDataControls(onChange: (selection: Selection | null) 
     const requestedSeason = query.get('season');
     const requestedMetric = query.get('metric');
     if (requestedSeason && result.seasons.some(value => String(value) === requestedSeason)) season.value = requestedSeason;
-    if (requestedMetric && isMetric(requestedMetric)) metric.value = requestedMetric;
+    if (requestedMetric && isMetric(requestedMetric) &&
+        [...metric.options].some(option => option.value === requestedMetric)) metric.value = requestedMetric;
     season.disabled = false;
     season.addEventListener('change', () => loadSeason());
     week.addEventListener('change', update);

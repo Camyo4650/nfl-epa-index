@@ -1,5 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+
+test('rank header and column toggle are visible by default', async () => {
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /<input\b[^>]*data-column-toggle="rank"[^>]*\bchecked\b/);
+  const header = html.match(/<th\b[^>]*data-column="rank"[^>]*>/)?.[0];
+  assert.ok(header);
+  assert.doesNotMatch(header, /\bhidden\b/);
+  assert.match(html, /data-sort="rank"/);
+});
 
 function element(dataset = {}) {
   return {
@@ -53,13 +63,16 @@ test('sort column and direction survive week, metric and season changes', async 
   rankButton.arrow = element();
   const pointsToggle = element({ columnToggle: 'pointsFor' });
   pointsToggle.checked = true;
+  const rankToggle = element({ columnToggle: 'rank' });
+  rankToggle.checked = true;
   nodes['th[data-column="pointsFor"]'] = pointsHeader;
+  nodes['th[data-column="rank"]'] = rankHeader;
   const document = {
     querySelector: key => nodes[key],
     querySelectorAll: key => ({
       '.filter': [],
       '.sort-button': [rankButton, pointsButton],
-      '[data-column-toggle]': [pointsToggle],
+      '[data-column-toggle]': [rankToggle, pointsToggle],
       '.site-nav a:not([aria-current="page"])': []
     })[key],
     addEventListener() {}
@@ -94,19 +107,40 @@ test('sort column and direction survive week, metric and season changes', async 
   };
   const flush = () => new Promise(resolve => setImmediate(resolve));
   const order = () => [...nodes['#rankings-body'].innerHTML.matchAll(/<strong>Team ([AB])<\/strong>/g)].map(match => match[1]);
+  const ranks = () => [...nodes['#rankings-body'].innerHTML.matchAll(/<td class="rank-cell"(?: hidden)?><span>(\d+)<\/span><\/td>/g)].map(match => match[1]);
   try {
     await import('../dist/app.js');
     await flush();
     assert.deepEqual(order(), ['A', 'B']);
+    assert.deepEqual(ranks(), ['01', '02']);
+    assert.equal(rankHeader.attributes['aria-sort'], 'ascending');
+    rankButton.dispatch('click');
+    assert.deepEqual(order(), ['B', 'A']);
+    assert.deepEqual(ranks(), ['02', '01']);
+    assert.equal(rankHeader.attributes['aria-sort'], 'descending');
+
+    nodes['#team-search'].value = 'Team A';
+    nodes['#team-search'].dispatch('input');
+    assert.deepEqual(order(), ['A']);
+    assert.deepEqual(ranks(), ['01']);
+    nodes['#team-search'].value = '';
+    nodes['#team-search'].dispatch('input');
     pointsButton.dispatch('click');
     assert.equal(pointsHeader.attributes['aria-sort'], 'descending');
     nodes['#week-select'].value = '1';
     nodes['#week-select'].dispatch('change');
     assert.deepEqual(order(), ['B', 'A']);
+    assert.deepEqual(ranks(), ['01', '02']);
+    nodes['#team-search'].value = 'Team A';
+    nodes['#team-search'].dispatch('input');
+    assert.deepEqual(ranks(), ['02']);
+    nodes['#team-search'].value = '';
+    nodes['#team-search'].dispatch('input');
     assert.equal(pointsHeader.attributes['aria-sort'], 'descending');
     pointsButton.dispatch('click');
     assert.equal(pointsHeader.attributes['aria-sort'], 'ascending');
     assert.deepEqual(order(), ['A', 'B']);
+    assert.deepEqual(ranks(), ['02', '01']);
 
     nodes['#week-select'].value = '2';
     nodes['#week-select'].dispatch('change');
@@ -130,6 +164,15 @@ test('sort column and direction survive week, metric and season changes', async 
     assert.deepEqual(order(), ['A', 'B']);
     assert.equal(rankHeader.attributes['aria-sort'], 'ascending');
     assert.equal(pointsHeader.hidden, true);
+
+    rankToggle.checked = false;
+    rankToggle.dispatch('change');
+    assert.equal(rankHeader.hidden, true);
+    assert.match(nodes['#rankings-body'].innerHTML, /<td class="rank-cell" hidden>/);
+    rankToggle.checked = true;
+    rankToggle.dispatch('change');
+    assert.equal(rankHeader.hidden, false);
+    assert.match(nodes['#rankings-body'].innerHTML, /<td class="rank-cell"><span>01<\/span>/);
   } finally {
     Object.assign(globalThis, previous);
   }

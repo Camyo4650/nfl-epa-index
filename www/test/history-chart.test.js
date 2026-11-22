@@ -60,3 +60,19 @@ test('teams are grouped by conference and division, then sorted by name', () => 
   assert.deepEqual(groups[0].teams.map(entry => entry.team.name), ['Bills', 'Jets']);
   assert.deepEqual(teams.map(entry => entry.team.name), ['Jets', 'Giants', 'Bills', 'Bengals']);
 });
+
+test('conference rankings are recalculated independently for each week', () => {
+  const data = {
+    1: { combined: [{ id: 'B', name: 'Bravo', conference: 'NFC', rank: 2 },
+      { id: 'A', name: 'Alpha', conference: 'AFC', rank: 1 },
+      { id: 'C', name: 'Charlie', conference: 'NFC', rank: 3 }] },
+    2: { combined: [{ id: 'C', name: 'Charlie', conference: 'NFC', rank: 1 },
+      { id: 'A', name: 'Alpha', conference: 'AFC', rank: 2 },
+      { id: 'B', name: 'Bravo', conference: 'NFC', rank: 3 }] }
+  };
+  const nfc = rankingHistory(data, 'combined', 'NFC');
+  assert.deepEqual(nfc.teams.map(team => [team.team.id, [...team.ranks.values()]]), [['B', [1, 2]], ['C', [2, 1]]]);
+  assert.deepEqual([...rankingHistory(data, 'combined', 'overall').teams[1].ranks.values()], [2, 3]);
+  assert.deepEqual(rankingHistory(data, 'combined', 'AFC').teams.map(team => [...team.ranks.values()]), [[1, 1]]);
+  assert.deepEqual(historyRankAxis([], 16), { min: 1, max: 16, ticks: [1, 4, 8, 12, 16] });
+});

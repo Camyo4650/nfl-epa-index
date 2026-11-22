@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { teams, weeklyRankings, weeklyRecords } from '../dist/data.js';
-import { filterRankings, formatRecord, getRankings, sortRankings } from '../dist/rankings.js';
+import { filterRankings, formatRecord, getRankings, rankByColumn, sortRankings } from '../dist/rankings.js';
 
 test('every sample week ranks all 32 unique NFL teams', () => {
   assert.equal(teams.length, 32);
@@ -89,6 +89,35 @@ test('record sorting uses winning percentage including ties and keeps unavailabl
   assert.deepEqual(sortRankings(rankings, 'record', 'ascending').map(team => team.rank), [2, 1, 4, 3]);
   assert.deepEqual(sortRankings(rankings, 'change', 'descending').map(team => team.rank), [2, 3, 1, 4]);
   assert.deepEqual(sortRankings(rankings, 'previousRank', 'ascending').map(team => team.rank), [3, 2, 1, 4]);
+});
+
+test('record ranks remain best-to-worst when the sort direction changes', () => {
+  const rows = Array.from({ length: 32 }, (_, index) => ({
+    id: String(index + 1), rank: index + 1,
+    record: { wins: 32 - index, losses: index, ties: 0 }
+  }));
+  const ranked = rankByColumn(rows, 'record', 'combined');
+  assert.deepEqual(sortRankings(ranked, 'record', 'descending').map(team => team.displayRank),
+    Array.from({ length: 32 }, (_, index) => index + 1));
+  assert.deepEqual(sortRankings(ranked, 'record', 'ascending').map(team => team.displayRank),
+    Array.from({ length: 32 }, (_, index) => 32 - index));
+  assert.equal(filterRankings([{ ...ranked[20], name: 'Team 21', conference: 'AFC' }], 'AFC', 'Team 21')[0].displayRank, 21);
+});
+
+test('column ranks use the correct best direction and stable tie and missing-value ordering', () => {
+  const rows = [
+    { id: 'A', rank: 1, epa: 0.1, points: { allowed: 21 }, record: { wins: 1, losses: 1, ties: 0 } },
+    { id: 'B', rank: 2, epa: -0.2, points: { allowed: 14 }, record: { wins: 1, losses: 1, ties: 0 } },
+    { id: 'C', rank: 3, epa: 0.1, points: { allowed: 14 }, record: { wins: 0, losses: 0, ties: 0 } }
+  ];
+  const order = (column, metric) => rankByColumn(rows, column, metric).map(team => team.id);
+  assert.deepEqual(order('epa', 'offense'), ['A', 'C', 'B']);
+  assert.deepEqual(order('epa', 'defense'), ['B', 'A', 'C']);
+  assert.deepEqual(order('pointsAllowed', 'combined'), ['B', 'C', 'A']);
+  const ranked = rankByColumn(rows, 'record', 'combined');
+  assert.deepEqual(ranked.map(team => [team.id, team.displayRank]), [['A', 1], ['B', 2], ['C', 3]]);
+  assert.deepEqual(sortRankings(ranked, 'record', 'ascending').map(team => [team.id, team.displayRank]),
+    [['A', 1], ['B', 2], ['C', 3]]);
 });
 
 test('EPA sorting uses numeric values and retains rank order for ties', () => {

@@ -1,6 +1,7 @@
 import { escapeHtml } from './components.js';
 import { setupDataControls } from './api.js';
 import { groupHistoryTeams, historyPosition, historyRankAxis, historySegments, rankingHistory } from './history-chart.js';
+import type { HistoryMode } from './history-chart.js';
 import { setupPointTooltip } from './history-point-tooltip.js';
 import { requiredElement } from './dom.js';
 import type { Selection, Team } from './types.js';
@@ -15,12 +16,14 @@ const selectAll = requiredElement<HTMLButtonElement>('#select-all');
 const clearAll = requiredElement<HTMLButtonElement>('#clear-all');
 const highlightStatus = requiredElement<HTMLElement>('#highlight-status');
 const clearHighlight = requiredElement<HTMLButtonElement>('#clear-highlight');
+const modeSelect = requiredElement<HTMLSelectElement>('#history-mode');
 const hidePointTooltip = setupPointTooltip(chart, requiredElement<HTMLElement>('#history-point-tooltip'));
 let selection: Selection | null = null;
 let history: ReturnType<typeof rankingHistory> | null = null;
 let chosen = new Set<string>();
 let activeSeason: number | null = null;
 let highlightedTeam: string | null = null;
+let mode: HistoryMode = 'overall';
 
 function color(team: Team) {
   return /^#[0-9a-f]{6}$/i.test(team.color) ? team.color : '#274c37';
@@ -40,6 +43,7 @@ function render(rebuildTeams = true) {
     comparison.textContent = '';
     highlightStatus.textContent = '';
     clearHighlight.disabled = true;
+    modeSelect.disabled = true;
     return;
   }
   if (!history) throw new Error('Ranking history has not been loaded.');
@@ -47,7 +51,7 @@ function render(rebuildTeams = true) {
   const visible = teams.filter(({ team }) => chosen.has(team.id));
   const width = Math.max(820, (weeks[weeks.length - 1] - weeks[0]) * 55 + 72);
   const height = 680;
-  const axis = historyRankAxis(visible);
+  const axis = historyRankAxis(visible, mode === 'overall' ? 32 : 16);
   const point = (week: number, rank: number) => historyPosition(week, rank, weeks[0], weeks[weeks.length - 1], width, height, axis);
   const grid = axis.ticks.map(rank => {
     const y = point(weeks[0], rank).y;
@@ -90,12 +94,14 @@ function render(rebuildTeams = true) {
       </div>`).join('');
   }
   teamList.disabled = false;
+  modeSelect.disabled = false;
   selectAll.disabled = visible.length === teams.length;
   clearAll.disabled = visible.length === 0;
   empty.hidden = visible.length !== 0;
   count.textContent = `${visible.length} OF ${teams.length} TEAMS SELECTED`;
-  comparison.textContent = `${selection.season} ${selection.metric} EPA rankings, all available weeks.`;
-  table.innerHTML = `<table><caption class="sr-only">${selection.season} ${escapeHtml(selection.metric)} EPA rankings by week</caption><thead><tr><th scope="col">TEAM</th>${weeks.map(week => `<th scope="col">W${week}</th>`).join('')}</tr></thead><tbody>${visible.map(({ team, ranks }) => `<tr><th scope="row">${escapeHtml(team.name)}</th>${weeks.map(week => `<td>${ranks.has(week) ? ranks.get(week) : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  const scope = mode === 'overall' ? 'league-wide' : `${mode} conference`;
+  comparison.textContent = `${selection.season} ${selection.metric} EPA ${scope} rankings, all available weeks.`;
+  table.innerHTML = `<table><caption class="sr-only">${selection.season} ${escapeHtml(selection.metric)} EPA ${scope} rankings by week</caption><thead><tr><th scope="col">TEAM</th>${weeks.map(week => `<th scope="col">W${week}</th>`).join('')}</tr></thead><tbody>${visible.map(({ team, ranks }) => `<tr><th scope="row">${escapeHtml(team.name)}</th>${weeks.map(week => `<td>${ranks.has(week) ? ranks.get(week) : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
   if (!visible.some(({ team }) => team.id === highlightedTeam)) highlightedTeam = null;
   updateHighlight();
 }
@@ -152,10 +158,19 @@ clearAll.addEventListener('click', () => {
   render();
 });
 
+modeSelect.addEventListener('change', () => {
+  if (!selection || (modeSelect.value !== 'overall' && modeSelect.value !== 'NFC' && modeSelect.value !== 'AFC')) return;
+  mode = modeSelect.value;
+  history = rankingHistory(selection.weeks, selection.metric, mode);
+  chosen = new Set(history.teams.map(({ team }) => team.id));
+  highlightedTeam = null;
+  render();
+});
+
 setupDataControls(value => {
   selection = value;
   if (value) {
-    history = rankingHistory(value.weeks, value.metric);
+    history = rankingHistory(value.weeks, value.metric, mode);
     if (value.season !== activeSeason) {
       chosen = new Set(history.teams.map(({ team }) => team.id));
       activeSeason = value.season;

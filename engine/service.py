@@ -5,6 +5,7 @@ import threading
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
+from uuid import UUID
 
 import store
 
@@ -28,7 +29,18 @@ class EngineHandler(BaseHTTPRequestHandler):
                 result = store.status()
             elif url.path == "/seasons":
                 result = store.seasons()
-            elif url.path == "/rankings":
+            elif url.path == "/playoffs/progress":
+                jobs = parse_qs(url.query).get("job", [])
+                if len(jobs) != 1:
+                    self.respond(400, {"error": "A valid job ID is required."})
+                    return
+                try:
+                    job = str(UUID(jobs[0]))
+                except ValueError:
+                    self.respond(400, {"error": "A valid job ID is required."})
+                    return
+                result = store.playoff_progress(job)
+            elif url.path in ("/rankings", "/playoffs"):
                 values = parse_qs(url.query).get("season", [])
                 if len(values) != 1 or not values[0].isascii() or not values[0].isdigit():
                     self.respond(400, {"error": "A valid season is required."})
@@ -37,7 +49,23 @@ class EngineHandler(BaseHTTPRequestHandler):
                 if not 2020 <= season <= datetime.now(timezone.utc).year:
                     self.respond(400, {"error": "Season must be between 2020 and the current year."})
                     return
-                result = store.season_data(season)
+                if url.path == "/playoffs":
+                    weeks = parse_qs(url.query).get("week", [])
+                    if len(weeks) != 1 or not weeks[0].isascii() or not weeks[0].isdigit() or not 1 <= int(weeks[0]) <= 18:
+                        self.respond(400, {"error": "A valid week between 1 and 18 is required."})
+                        return
+                    jobs = parse_qs(url.query).get("job", [])
+                    if len(jobs) > 1:
+                        self.respond(400, {"error": "A valid job ID is required."})
+                        return
+                    try:
+                        job = str(UUID(jobs[0])) if jobs else None
+                    except ValueError:
+                        self.respond(400, {"error": "A valid job ID is required."})
+                        return
+                    result = store.playoff_data(season, int(weeks[0]), job) if job else store.playoff_data(season, int(weeks[0]))
+                else:
+                    result = store.season_data(season)
             else:
                 self.respond(404, {"error": "Not found."})
                 return

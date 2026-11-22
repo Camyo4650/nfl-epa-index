@@ -8,6 +8,7 @@ import nflreadpy as nfl
 
 
 MIN_SEASON = 2020
+COMBINED_EPA_VERSION = 1
 
 
 def completed_games(schedules):
@@ -167,7 +168,11 @@ def build_season(season, teams, games, plays):
             for metric, values_by_team in metrics.items()
         }
         all_averages["combined"] = {
-            team: all_averages["offense"][team] - all_averages["defense"][team] + all_averages["special"][team]
+            team: (
+                sum(metrics["offense"][team])
+                - sum(metrics["defense"][team])
+                + sum(metrics["special"][team])
+            ) / sum(len(metrics[metric][team]) for metric in ("offense", "defense", "special"))
             for team in team_ids
             if all(team in all_averages[metric] for metric in ("offense", "defense", "special"))
         }
@@ -189,19 +194,33 @@ def build_season(season, teams, games, plays):
             snapshot[metric] = ranked
         snapshots[str(week)] = snapshot
         previous_week = week
-    return add_game_details({"season": season, "weeks": snapshots}, games)
+    return add_game_details({
+        "season": season, "weeks": snapshots, "combinedEpaVersion": COMBINED_EPA_VERSION,
+    }, games)
 
 
 def main():
     import store
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["seasons", "season", "status", "refresh"])
+    parser.add_argument("command", choices=["seasons", "season", "status", "refresh", "playoffs", "playoff-progress"])
     parser.add_argument("--season", type=int)
+    parser.add_argument("--week", type=int)
+    parser.add_argument("--job")
     args = parser.parse_args()
+    if args.job is not None:
+        from uuid import UUID
+        try:
+            args.job = str(UUID(args.job))
+        except ValueError:
+            parser.error("job must be a valid UUID")
     if args.command == "refresh":
         store.refresh()
         result = store.status()
+    elif args.command == "playoff-progress":
+        if args.job is None:
+            parser.error("job is required")
+        result = store.playoff_progress(args.job)
     elif args.command == "status":
         result = store.status()
     elif args.command == "seasons":
@@ -211,7 +230,12 @@ def main():
     else:
         if args.season is None or args.season < MIN_SEASON:
             parser.error(f"season must be at least {MIN_SEASON}")
-        result = store.season_data(args.season)
+        if args.command == "playoffs":
+            if args.week is None or not 1 <= args.week <= 18:
+                parser.error("week must be between 1 and 18")
+            result = store.playoff_data(args.season, args.week, args.job)
+        else:
+            result = store.season_data(args.season)
     print(json.dumps(result, allow_nan=False))
 
 

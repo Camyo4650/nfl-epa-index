@@ -91,12 +91,41 @@ class EngineTests(unittest.TestCase):
         combined = {row["id"]: row for row in data["combined"]}
         self.assertAlmostEqual(special["A"]["epa"], -0.4)
         self.assertAlmostEqual(special["B"]["epa"], 0.4)
-        self.assertAlmostEqual(combined["A"]["epa"], 0.4 - (-0.2) - 0.4)
-        self.assertAlmostEqual(combined["B"]["epa"], -0.2 - 0.4 + 0.4)
-        self.assertEqual(data["combined"][0]["id"], "A")
+        self.assertAlmostEqual(combined["A"]["epa"], (0.4 - (-0.2) - 0.8) / 4)
+        self.assertAlmostEqual(combined["B"]["epa"], (-0.2 - 0.4 + 0.8) / 4)
+        self.assertEqual(data["combined"][0]["id"], "B")
         for metric in data.values():
             row = next(team for team in metric if team["id"] == "A")
             self.assertAlmostEqual(row["strengthOfSchedule"], -0.2 - 0.4)
+
+    def test_combined_weights_all_qualifying_plays_through_each_week(self):
+        plays = [
+            self.play("g1", 1, "A", "B", 0.8),
+            self.play("g1", 1, "A", "B", 0.4),
+            self.play("g1", 1, "B", "A", 0.1),
+            self.play("g1", 1, "A", "B", 0.2, play_type="punt"),
+            self.play("g2", 2, "A", "B", -0.9),
+            self.play("g2", 2, "B", "A", 0.8),
+            self.play("g2", 2, "B", "A", 0.8),
+            self.play("g2", 2, "B", "A", -0.3, play_type="punt"),
+            self.play("g2", 2, "A", "B", 100, qb_kneel=1),
+            self.play("g2", 2, "A", "B", 100, play_type="punt", play_deleted=1),
+        ]
+        result = build_season(2024, self.teams, self.games, plays)
+        self.assertEqual(result["combinedEpaVersion"], 1)
+        first = {row["id"]: row for row in result["weeks"]["1"]["combined"]}
+        second = {row["id"]: row for row in result["weeks"]["2"]["combined"]}
+        self.assertAlmostEqual(first["A"]["epa"], (0.8 + 0.4 - 0.1 + 0.2) / 4)
+        self.assertAlmostEqual(second["A"]["epa"], (0.8 + 0.4 - 0.9 - 0.1 - 0.8 - 0.8 + 0.2 + 0.3) / 8)
+        self.assertAlmostEqual(second["B"]["epa"], -second["A"]["epa"])
+        self.assertEqual((first["A"]["rank"], second["A"]["rank"], second["A"]["previousRank"], second["A"]["change"]), (1, 2, 1, -1))
+        self.assertIsNone(second["A"]["plays"])
+
+    def test_combined_still_requires_each_component(self):
+        plays = [self.play("g1", 1, "A", "B", 0.4),
+                 self.play("g1", 1, "B", "A", -0.2)]
+        result = build_season(2024, self.teams, [self.games[0]], plays)
+        self.assertEqual(result["weeks"]["1"]["combined"], [])
 
     def test_week_not_published_until_all_games_and_play_data_are_complete(self):
         incomplete = {**self.games[1], "game_id": "g3", "home_score": None, "away_score": None}

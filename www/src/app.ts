@@ -1,4 +1,4 @@
-import { filterRankings, formatRecord, sortRankings } from './rankings.js';
+import { filterRankings, formatRecord, rankByColumn, sortRankings } from './rankings.js';
 import { badge, escapeHtml, movement } from './components.js';
 import { setupDataControls } from './api.js';
 import { gameResult, gameSummary } from './game-details.js';
@@ -33,7 +33,8 @@ function render() {
     return;
   }
   const { rankings, week, metric } = selection;
-  const filtered = sortRankings(filterRankings(rankings, conference, search.value), sortColumn, sortDirection);
+  const sorted = sortRankings(rankByColumn(rankings, sortColumn, metric), sortColumn, sortDirection);
+  const filtered = filterRankings(sorted, conference, search.value);
 
   sortButtons.forEach(button => {
     const active = button.dataset.sort === sortColumn;
@@ -62,7 +63,7 @@ function render() {
 
   rankingsBody.innerHTML = filtered.map((team, index) => `
     <tr class="rankings-row" data-team="${escapeHtml(team.id)}">
-      <td class="rank-cell"${columnHidden('rank')}><span>${String(index + 1).padStart(2, '0')}</span></td>
+      <td class="rank-cell"${columnHidden('rank')}><span>${String(team.displayRank).padStart(2, '0')}</span></td>
       <td><button type="button" class="team-cell rankings-team-button" aria-expanded="${expansion.isExpanded(team.id)}" aria-controls="rankings-game-details-${index}">${badge(team)}<span><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.id)}</small></span><span class="rankings-expand" aria-hidden="true">⌄</span></button>
         <div id="rankings-game-details-${index}" class="rankings-game-details"${expansion.isExpanded(team.id) ? '' : ' hidden'}>${gameSummary(team.games, week)}</div></td>
       <td class="division-cell"${columnHidden('division')}><span>${escapeHtml(team.conference)}</span> ${escapeHtml(team.division)}</td>

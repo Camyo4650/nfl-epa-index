@@ -35,6 +35,11 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(self.request("/rankings?season=invalid")[0], 400)
         self.assertEqual(self.request("/rankings?season=2019")[0], 400)
         self.assertEqual(self.request("/rankings?season=2024&season=2025")[0], 400)
+        self.assertEqual(self.request("/playoffs?season=2024")[0], 400)
+        self.assertEqual(self.request("/playoffs?season=2024&week=19")[0], 400)
+        self.assertEqual(self.request("/playoffs?season=2024&week=1&week=2")[0], 400)
+        self.assertEqual(self.request("/playoffs/progress?job=invalid")[0], 400)
+        self.assertEqual(self.request("/playoffs?season=2024&week=1&job=invalid")[0], 400)
         self.assertEqual(self.request("/unknown")[0], 404)
 
     @patch("service.store")
@@ -43,5 +48,12 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(self.request("/seasons"), (200, {"seasons": [2024]}))
         store.status.return_value = {"latestWeek": 10}
         self.assertEqual(self.request("/status"), (200, {"latestWeek": 10}))
+        store.playoff_data.return_value = {"week": 10}
+        self.assertEqual(self.request("/playoffs?season=2024&week=10"), (200, {"week": 10}))
+        store.playoff_data.assert_called_once_with(2024, 10)
+        job = "12345678-1234-5678-1234-567812345678"
+        store.playoff_progress.return_value = {"completed": 10000, "total": 100000}
+        self.assertEqual(self.request(f"/playoffs/progress?job={job}"),
+                         (200, {"completed": 10000, "total": 100000}))
         store.season_data.side_effect = RuntimeError("upstream failed")
         self.assertEqual(self.request("/rankings?season=2024")[0], 503)

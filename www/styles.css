@@ -157,7 +157,7 @@ tbody tr:hover { background: #fafcf9; }
 .chart-controls button:hover:not(:disabled) { background: #edf5e6; }
 .chart-controls button:disabled { color: #a7b0a7; cursor: default; }
 .legend-previous { border: 2px solid #aeb8ad; background: #fff; }
-.legend-current { background: #274c37; }
+.legend-current { background: #7d8580; }
 .chart-hint { padding: 0 24px 18px; color: #8b988d; font-size: 11px; }
 .chart-scroll { overflow-x: auto; }
 .chart-content { min-width: 1080px; }
@@ -180,9 +180,13 @@ tbody tr:hover { background: #fafcf9; }
 .chart-baseline { stroke: #eef1ed; stroke-width: 1; }
 .chart-up { stroke: #79a869; fill: #79a869; stroke-width: 2; }
 .chart-down { stroke: #cc8c7d; fill: #cc8c7d; stroke-width: 2; }
+.chart-neutral { fill: #7d8580; }
 .chart-previous, .chart-unchanged { fill: #fff; stroke: #acb7ac; stroke-width: 2; }
-.chart-current { fill: #274c37; }
+.chart-previous.chart-up { fill: #fff; stroke: #79a869; }
+.chart-previous.chart-down { fill: #fff; stroke: #cc8c7d; }
 .chart-rank { fill: #fff; font: 700 10px "Space Grotesk", sans-serif; text-anchor: middle; dominant-baseline: central; }
+.chart-rank-previous.chart-up { fill: #79a869; stroke: none; }
+.chart-rank-previous.chart-down { fill: #cc8c7d; stroke: none; }
 .chart-game-details, .rankings-game-details { padding: 0 12px 14px 0; font-size: 11px; }
 .rankings-game-details { padding: 8px 0 0; }
 .chart-game-details[hidden], .rankings-game-details[hidden] { display: none; }
@@ -217,6 +221,22 @@ tbody tr:hover { background: #fafcf9; }
 .history-data summary:focus-visible { outline: 3px solid #6d9c33; outline-offset: 3px; }
 .history-data table { margin-top: 12px; width: max-content; min-width: 100%; }
 .history-data th, .history-data td { white-space: nowrap; }
+.playoffs-section { padding-bottom: 60px; }
+.playoff-notice { padding: 14px 18px; border: 1px solid #e4e6d3; border-radius: 8px; background: #fafbf1; color: #64705e; font-size: 12px; line-height: 1.65; margin-bottom: 20px; }
+.playoff-conferences { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.playoff-conference-heading { padding: 12px 0 16px; }
+.playoff-teams { display: grid; grid-auto-rows: minmax(112px, 1fr); gap: 8px; }
+.playoff-card { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 15px; background: #fff; border: 1px solid #e5eae3; border-radius: 9px; }
+.playoff-card-in { border-left: 3px solid #8ebd4c; padding-left: 13px; }
+.playoff-card-eliminated { background: #e8ebe6; border-color: #d7ddd5; }
+.playoff-rank { width: 24px; color: #91a096; font: 700 13px "Space Grotesk", sans-serif; }
+.playoff-team { flex: 1; min-width: 0; }
+.playoff-team h3 { font-size: 14px; letter-spacing: -.3px; }
+.playoff-team > span, .playoff-team small { display: block; margin-top: 4px; color: #7d8b80; font-size: 10px; }
+.playoff-team small { color: #6b8d55; font-size: 9px; font-weight: 700; letter-spacing: .45px; }
+.playoff-probability { text-align: right; white-space: nowrap; }
+.playoff-probability strong { display: block; color: #274c37; font: 700 18px "Space Grotesk", sans-serif; }
+.playoff-probability span { color: #9aa59a; font-size: 9px; font-weight: 700; letter-spacing: .6px; }
 @media (max-width: 760px) {
   .header-inner, .page-shell, .site-footer > div { width: min(100% - 36px, 1180px); }
   .header-caption, .intro-decoration { display: none; }
@@ -242,8 +262,12 @@ tbody tr:hover { background: #fafcf9; }
   th:nth-child(2) { width: auto; }
   .site-footer > div { gap: 12px; flex-wrap: wrap; padding: 20px 0; }
   .chart-toolbar { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .playoff-conferences { grid-template-columns: 1fr; gap: 28px; }
 }
 @media (max-width: 430px) {
+  .site-header { height: auto; }
+  .header-inner { min-height: 76px; flex-wrap: wrap; padding: 10px 0; }
+  .site-nav { width: 100%; justify-content: space-between; }
   .brand { font-size: 13px; }
   .brand-mark { width: 29px; height: 29px; }
   .site-nav a { padding: 9px 5px; font-size: 10px; }

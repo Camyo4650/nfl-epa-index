@@ -1,17 +1,23 @@
 import type { HistoryTeam, Metric, WeeklySnapshots } from './types.js';
 
-export function rankingHistory(weeklySnapshots: WeeklySnapshots, metric: Metric) {
+export type HistoryMode = 'overall' | 'NFC' | 'AFC';
+
+export function rankingHistory(weeklySnapshots: WeeklySnapshots, metric: Metric, mode: HistoryMode = 'overall') {
   const weeks = Object.keys(weeklySnapshots).map(Number).sort((a, b) => a - b);
   const teams = new Map<string, HistoryTeam>();
   for (const week of weeks) {
-    for (const team of weeklySnapshots[week][metric]) {
+    const rankings = [...weeklySnapshots[week][metric]].sort((a, b) => a.rank - b.rank);
+    let conferenceRank = 0;
+    for (const team of rankings) {
       if (!Number.isInteger(team.rank) || team.rank < 1 || team.rank > 32) {
         throw new Error(`Invalid rank for ${team.id} in week ${week}: ${team.rank}.`);
       }
+      if (mode !== 'overall' && team.conference !== mode) continue;
+      const rank = mode === 'overall' ? team.rank : ++conferenceRank;
       if (!teams.has(team.id)) teams.set(team.id, { team, ranks: new Map() });
       const entry = teams.get(team.id)!;
       entry.team = team;
-      entry.ranks.set(week, team.rank);
+      entry.ranks.set(week, rank);
     }
   }
   return { weeks, teams: [...teams.values()].sort((a, b) => a.team.name.localeCompare(b.team.name)) };
@@ -36,12 +42,12 @@ export function historySegments(weeks: number[], ranks: Map<number, number>) {
   return segments;
 }
 
-export function historyRankAxis(teams: HistoryTeam[]) {
+export function historyRankAxis(teams: HistoryTeam[], maxRank = 32) {
   const ranks = teams.flatMap(({ ranks }) => [...ranks.values()]);
-  if (!ranks.length) return { min: 1, max: 32, ticks: [1, 8, 16, 24, 32] };
+  if (!ranks.length) return { min: 1, max: maxRank, ticks: maxRank === 16 ? [1, 4, 8, 12, 16] : [1, 8, 16, 24, 32] };
 
   const min = Math.max(1, Math.min(...ranks) - 1);
-  const max = Math.min(32, Math.max(...ranks) + 1);
+  const max = Math.min(maxRank, Math.max(...ranks) + 1);
   const step = [1, 2, 5, 10].find(value => (max - min) / value <= 5) ?? 10;
   const ticks = [min];
   for (let rank = Math.ceil((min + 1) / step) * step; rank < max; rank += step) {
