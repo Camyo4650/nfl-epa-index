@@ -48,7 +48,7 @@ function render() {
 
   comparisonLabel.textContent = rankings.some(team => team.previousRank !== null) ? `Compared to Week ${week - 1}.` : 'No previous week available.';
   requiredElement<HTMLElement>('#metric-label').textContent = {
-    combined: 'Combined EPA index',
+    combined: 'Combined EPA/play',
     offense: 'Offensive EPA/play',
     defense: 'Defensive EPA/play allowed',
     special: 'Net special-teams EPA/play'
@@ -62,7 +62,7 @@ function render() {
 
   rankingsBody.innerHTML = filtered.map((team, index) => `
     <tr class="rankings-row" data-team="${escapeHtml(team.id)}">
-      <td class="rank-cell"${columnHidden('rank')}><span>${String(team.rank).padStart(2, '0')}</span></td>
+      <td class="rank-cell"${columnHidden('rank')}><span>${String(index + 1).padStart(2, '0')}</span></td>
       <td><button type="button" class="team-cell rankings-team-button" aria-expanded="${expansion.isExpanded(team.id)}" aria-controls="rankings-game-details-${index}">${badge(team)}<span><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.id)}</small></span><span class="rankings-expand" aria-hidden="true">⌄</span></button>
         <div id="rankings-game-details-${index}" class="rankings-game-details"${expansion.isExpanded(team.id) ? '' : ' hidden'}>${gameSummary(team.games, week)}</div></td>
       <td class="division-cell"${columnHidden('division')}><span>${escapeHtml(team.conference)}</span> ${escapeHtml(team.division)}</td>
